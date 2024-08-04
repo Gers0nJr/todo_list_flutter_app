@@ -14,6 +14,8 @@ class _TodoListPageState extends State<TodoListPage> {
   final TextEditingController todoController = TextEditingController();
 
   List<Todo> todos = [];
+  Todo? deletedTodo;
+  int? deletedTodoPos;
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +44,13 @@ class _TodoListPageState extends State<TodoListPage> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                          String text = todoController.text;
-                          setState(() {
-                            Todo newTodo = Todo(
-                              title: text,
-                              dateTime: DateTime.now()
-                            );
-                            todos.add(newTodo);
-                            todoController.clear();
-                          });
+                        String text = todoController.text;
+                        setState(() {
+                          Todo newTodo =
+                              Todo(title: text, dateTime: DateTime.now());
+                          todos.add(newTodo);
+                          todoController.clear();
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.lightBlueAccent,
@@ -74,11 +74,11 @@ class _TodoListPageState extends State<TodoListPage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: [
-                      for(Todo todo in todos)
-                      TodoListItem(
+                      for (Todo todo in todos)
+                        TodoListItem(
                           todo: todo,
                           onDelete: onDelete,
-                      ),
+                        ),
                     ],
                   ),
                 ),
@@ -122,9 +122,28 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 
   void onDelete(Todo todo) {
+    deletedTodo = todo;
+    deletedTodoPos = todos.indexOf(todo);
+
     setState(() {
       todos.remove(todo);
     });
-  }
 
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(
+        'Tarefa ${todo.title} foi removida com sucesso!',
+        style: TextStyle(color: Colors.black),
+      ),
+      backgroundColor: Colors.white,
+      action: SnackBarAction(
+        label: 'Desfazer',
+        textColor: Colors.blue,
+        onPressed: () {
+          setState(() {
+            todos.insert(deletedTodoPos!, deletedTodo!);
+          });
+        },
+      ),
+    ));
+  }
 }
