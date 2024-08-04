@@ -129,6 +129,7 @@ class _TodoListPageState extends State<TodoListPage> {
       todos.remove(todo);
     });
 
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
         'Tarefa ${todo.title} foi removida com sucesso!',
@@ -144,6 +145,7 @@ class _TodoListPageState extends State<TodoListPage> {
           });
         },
       ),
+      duration: const Duration(seconds: 5),
     ));
   }
 }
