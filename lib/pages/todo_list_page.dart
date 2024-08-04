@@ -16,6 +16,7 @@ class _TodoListPageState extends State<TodoListPage> {
   List<Todo> todos = [];
   Todo? deletedTodo;
   int? deletedTodoPos;
+  String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +34,15 @@ class _TodoListPageState extends State<TodoListPage> {
                       child: TextField(
                         controller: todoController,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Adicionar uma Tarefa',
-                          hintText: 'Adicionar uma Tarefa',
-                        ),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(
+                              color: Colors.blue,
+                              width: 2
+                            )),
+                            border: OutlineInputBorder(),
+                            labelStyle: TextStyle(color: Colors.blue),
+                            labelText: 'Adicionar uma Tarefa',
+                            hintText: 'Adicionar uma Tarefa',
+                            errorText: errorText),
                       ),
                     ),
                     SizedBox(
@@ -45,10 +51,19 @@ class _TodoListPageState extends State<TodoListPage> {
                     ElevatedButton(
                       onPressed: () {
                         String text = todoController.text;
+
+                        if (text.isEmpty) {
+                          setState(() {
+                            errorText = 'Título não pode ser vazio!';
+                          });
+                          return;
+                        }
+
                         setState(() {
                           Todo newTodo =
                               Todo(title: text, dateTime: DateTime.now());
                           todos.add(newTodo);
+                          errorText = null;
                           todoController.clear();
                         });
                       },
@@ -96,7 +111,9 @@ class _TodoListPageState extends State<TodoListPage> {
                       width: 8,
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: todos.length == 0 ? null : () {
+                        showDeleteTodosConfrimationDialog();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.lightBlueAccent,
                         padding: EdgeInsets.all(17),
@@ -147,5 +164,44 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
       duration: const Duration(seconds: 5),
     ));
+  }
+
+  void showDeleteTodosConfrimationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Limpar Tudo?'),
+        content: Text('Você tem certeza que deseja apagar todas as tarefas?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              deleteAllTodos();
+            },
+            child: Text(
+              'Limpar Tudo',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(backgroundColor: Colors.red),
+          )
+        ],
+      ),
+    );
+  }
+
+  void deleteAllTodos() {
+    setState(() {
+      todos.clear();
+    });
   }
 }
